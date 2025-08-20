@@ -16,8 +16,8 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
       - name: Grant execute permission for Gradle wrapper
-        run: chmod +x gradlew
+        run: chmod +x gradlew && ls -l gradle/wrapper
       - name: Compile
-        run: ./gradlew compileJava
+        run: ./gradlew assemble
       - name: Test
         run: ./gradlew test
