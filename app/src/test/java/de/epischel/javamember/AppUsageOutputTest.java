@@ -26,6 +26,7 @@ class AppUsageOutputTest {
                     void qux() { b++; }
                     void quux(int b) { this.b = b; }
                     void callQux() { qux(); }
+                    void useBoth() { a++; b++; }
                     void noUse() {}
                 }
                 """;
@@ -43,9 +44,10 @@ class AppUsageOutputTest {
         }
 
         String expected = String.join(System.lineSeparator(),
-                "a: foo(), bar(int), bar(), callFoo()",
-                "b: qux(), quux(int), callQux()",
-                "c:") + System.lineSeparator();
+                "a: foo(), bar(int), bar(), callFoo(), useBoth()",
+                "b: qux(), quux(int), callQux(), useBoth()",
+                "c:",
+                "a, b") + System.lineSeparator();
 
         assertEquals(expected, out.toString());
     }
