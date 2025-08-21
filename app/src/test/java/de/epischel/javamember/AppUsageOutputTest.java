@@ -47,6 +47,8 @@ class AppUsageOutputTest {
                 "a: foo(), bar(int), bar(), callFoo(), useBoth()",
                 "b: qux(), quux(int), callQux(), useBoth()",
                 "c:",
+                "",
+                "Cluster:",
                 "a, b") + System.lineSeparator();
 
         assertEquals(expected, out.toString());
