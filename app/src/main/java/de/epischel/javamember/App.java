@@ -28,5 +28,10 @@ public class App {
             String joined = String.join(", ", methods);
             System.out.println(variable + ":" + (joined.isEmpty() ? "" : " " + joined));
         }
+        System.out.println("");
+        System.out.println("Cluster:");
+        VariableClusterFinder.findClusters(cu).stream()
+                .filter(cluster -> cluster.size() > 1)
+                .forEach(cluster -> System.out.println(String.join(", ", cluster)));
     }
 }
