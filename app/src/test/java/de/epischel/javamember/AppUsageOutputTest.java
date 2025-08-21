@@ -22,8 +22,10 @@ class AppUsageOutputTest {
                     void foo() { a = 1; }
                     void bar(int a) { this.a = a; }
                     void bar() { a = 2; }
+                    void callFoo() { foo(); }
                     void qux() { b++; }
                     void quux(int b) { this.b = b; }
+                    void callQux() { qux(); }
                     void noUse() {}
                 }
                 """;
@@ -41,8 +43,8 @@ class AppUsageOutputTest {
         }
 
         String expected = String.join(System.lineSeparator(),
-                "a: foo(), bar(int), bar()",
-                "b: qux(), quux(int)",
+                "a: foo(), bar(int), bar(), callFoo()",
+                "b: qux(), quux(int), callQux()",
                 "c:") + System.lineSeparator();
 
         assertEquals(expected, out.toString());

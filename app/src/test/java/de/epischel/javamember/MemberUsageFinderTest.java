@@ -24,8 +24,11 @@ class MemberUsageFinderTest {
                     void bar() { a = 2; }
                     void baz() { int a = 0; }
                     void useOther(Sample other) { other.a++; }
+                    void callFoo() { foo(); }
+                    void callCallFoo() { callFoo(); }
                     void qux() { b++; }
                     void quux(int b) { this.b = b; }
+                    void callQux() { qux(); }
                     void noUse() {}
                 }
                 """;
@@ -42,8 +45,8 @@ class MemberUsageFinderTest {
                 .map(m -> m.getSignature().asString())
                 .collect(Collectors.toList());
 
-        assertEquals(List.of("foo()", "bar(int)", "bar()"), aUsage);
-        assertEquals(List.of("qux()", "quux(int)"), bUsage);
+        assertEquals(List.of("foo()", "bar(int)", "bar()", "callFoo()", "callCallFoo()"), aUsage);
+        assertEquals(List.of("qux()", "quux(int)", "callQux()"), bUsage);
         assertEquals(List.of(), cUsage);
     }
 }
