@@ -38,6 +38,18 @@ application {
     mainClass = 'de.epischel.javamember.App'
 }
 
+jar {
+    manifest {
+        attributes "Main-Class": "de.epischel.javamember.App"
+    }
+	
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
