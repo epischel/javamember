@@ -32,5 +32,26 @@ class VariableClusterFinderTest {
         List<Set<String>> clusters = VariableClusterFinder.findClusters(cu);
         assertEquals(List.of(Set.of("a", "b", "c"), Set.of("d")), clusters);
     }
+
+    @Test
+    void excludesVariablesBeforeBuildingClusters() throws Exception {
+        String source = """
+                class Sample {
+                    private int a;
+                    private int b;
+                    private int c;
+
+                    void useAB() { a++; b++; }
+                    void useBC() { b++; c++; }
+                }
+                """;
+        Path temp = Files.createTempFile("Sample", ".java");
+        Files.writeString(temp, source);
+        CompilationUnit cu = App.parseFile(temp);
+
+        List<Set<String>> clusters = VariableClusterFinder.findClusters(cu, Set.of("b"));
+
+        assertEquals(List.of(Set.of("a"), Set.of("c")), clusters);
+    }
 }
 

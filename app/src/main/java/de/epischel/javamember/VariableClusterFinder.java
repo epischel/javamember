@@ -29,7 +29,13 @@ public class VariableClusterFinder {
      * @return list of clusters, each represented as a set of variable names
      */
     public static List<Set<String>> findClusters(CompilationUnit cu) {
-        List<String> variables = MemberVariableExtractor.getMemberVariableNames(cu);
+        return findClusters(cu, Set.of());
+    }
+
+    public static List<Set<String>> findClusters(CompilationUnit cu, Set<String> excludedVariables) {
+        List<String> variables = MemberVariableExtractor.getMemberVariableNames(cu).stream()
+                .filter(variable -> !excludedVariables.contains(variable))
+                .toList();
         Map<String, Set<String>> usage = new HashMap<>();
         for (String var : variables) {
             Set<String> methods = MemberUsageFinder.findUsage(cu, var).stream()

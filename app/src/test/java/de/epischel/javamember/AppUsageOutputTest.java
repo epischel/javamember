@@ -86,5 +86,62 @@ class AppUsageOutputTest {
                 """;
         assertEquals(expected, Files.readString(output));
     }
+
+    @Test
+    void excludesCommaSeparatedVariablesFromTextOutputAndClusters() throws Exception {
+        Path source = Files.createTempFile("Sample", ".java");
+        Files.writeString(source, """
+                class Sample {
+                    private int a;
+                    private int b;
+                    private int c;
+                    void useAB() { a++; b++; }
+                    void useBC() { b++; c++; }
+                }
+                """);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        try {
+            System.setOut(new PrintStream(out));
+            App.main(new String[]{"--exclude", " b, c, ", source.toString()});
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        String expected = String.join(System.lineSeparator(),
+                "a:",
+                "- useAB()",
+                "",
+                "Cluster:") + System.lineSeparator();
+        assertEquals(expected, out.toString());
+    }
+
+    @Test
+    void excludesCommaSeparatedVariablesFromDotOutput() throws Exception {
+        Path source = Files.createTempFile("Sample", ".java");
+        Files.writeString(source, """
+                class Sample {
+                    private int a;
+                    private int b;
+                    private int c;
+                    void useAll() { a++; b++; c++; }
+                }
+                """);
+        Path output = Files.createTempFile("variables", ".dot");
+
+        App.main(new String[]{
+                "--dot", output.toString(),
+                "--exclude", "a, c",
+                source.toString()
+        });
+
+        String expected = """
+                graph variable_usage {
+                  "b";
+                }
+                """;
+        assertEquals(expected, Files.readString(output));
+    }
 }
 
