@@ -62,5 +62,29 @@ class AppUsageOutputTest {
 
         assertEquals(expected, out.toString());
     }
+
+    @Test
+    void writesDotGraphToRequestedFile() throws Exception {
+        Path source = Files.createTempFile("Sample", ".java");
+        Files.writeString(source, """
+                class Sample {
+                    private int a;
+                    private int b;
+                    void useBoth() { a++; b++; }
+                }
+                """);
+        Path output = Files.createTempFile("variables", ".dot");
+
+        App.main(new String[]{"--dot", output.toString(), source.toString()});
+
+        String expected = """
+                graph variable_usage {
+                  "a";
+                  "b";
+                  "a" -- "b" [label="useBoth()"];
+                }
+                """;
+        assertEquals(expected, Files.readString(output));
+    }
 }
 

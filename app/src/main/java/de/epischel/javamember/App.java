@@ -14,9 +14,20 @@ public class App {
 
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
-            System.err.println("Please provide a path to a Java source file.");
+            printUsage();
             return;
         }
+
+        if ("--dot".equals(args[0])) {
+            if (args.length != 3) {
+                printUsage();
+                return;
+            }
+            CompilationUnit cu = parseFile(Path.of(args[2]));
+            VariableUsageDotWriter.write(cu, Path.of(args[1]));
+            return;
+        }
+
         Path file = Path.of(args[0]);
         CompilationUnit cu = parseFile(file);
         List<String> variables = MemberVariableExtractor.getMemberVariableNames(cu);
@@ -31,5 +42,11 @@ public class App {
         VariableClusterFinder.findClusters(cu).stream()
                 .filter(cluster -> cluster.size() > 1)
                 .forEach(cluster -> System.out.println(String.join(", ", cluster)));
+    }
+
+    private static void printUsage() {
+        System.err.println("Usage:");
+        System.err.println("  javamember <Java source file>");
+        System.err.println("  javamember --dot <output.dot> <Java source file>");
     }
 }
