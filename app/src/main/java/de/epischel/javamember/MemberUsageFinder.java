@@ -48,7 +48,7 @@ public class MemberUsageFinder {
                     Deque<MethodDeclaration> stack = new ArrayDeque<>();
 
                     for (MethodDeclaration m : methods) {
-                        if (usesVariable(m, variable)) {
+                        if (directlyUsesVariable(m, variable)) {
                             result.add(m);
                             stack.push(m);
                         }
@@ -94,7 +94,10 @@ public class MemberUsageFinder {
         return callers;
     }
 
-    private static Optional<MethodDeclaration> resolveCall(MethodCallExpr call, ClassOrInterfaceDeclaration clazz, List<MethodDeclaration> methods) {
+    static Optional<MethodDeclaration> resolveCall(
+            MethodCallExpr call,
+            ClassOrInterfaceDeclaration clazz,
+            List<MethodDeclaration> methods) {
         if (call.getScope().isPresent()) {
             var scope = call.getScope().get();
             if (!(scope.isThisExpr() || scope.toString().equals(clazz.getNameAsString()))) {
@@ -108,7 +111,7 @@ public class MemberUsageFinder {
                 .findFirst();
     }
 
-    private static boolean usesVariable(MethodDeclaration method, String variable) {
+    static boolean directlyUsesVariable(MethodDeclaration method, String variable) {
         boolean hasLocal = method.getParameters().stream()
                 .anyMatch(p -> p.getNameAsString().equals(variable))
                 || method.findAll(VariableDeclarator.class).stream()

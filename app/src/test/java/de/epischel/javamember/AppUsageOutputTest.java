@@ -78,10 +78,13 @@ class AppUsageOutputTest {
         App.main(new String[]{"--dot", output.toString(), source.toString()});
 
         String expected = """
-                graph variable_usage {
-                  "a";
-                  "b";
-                  "a" -- "b" [label="useBoth()"];
+                digraph member_usage {
+                  rankdir=LR;
+                  "variable:a" [label="a", shape=ellipse];
+                  "variable:b" [label="b", shape=ellipse];
+                  "method:useBoth()" [label="useBoth()", shape=box];
+                  "method:useBoth()" -> "variable:a" [label="uses"];
+                  "method:useBoth()" -> "variable:b" [label="uses"];
                 }
                 """;
         assertEquals(expected, Files.readString(output));
@@ -137,8 +140,11 @@ class AppUsageOutputTest {
         });
 
         String expected = """
-                graph variable_usage {
-                  "b";
+                digraph member_usage {
+                  rankdir=LR;
+                  "variable:b" [label="b", shape=ellipse];
+                  "method:useAll()" [label="useAll()", shape=box];
+                  "method:useAll()" -> "variable:b" [label="uses"];
                 }
                 """;
         assertEquals(expected, Files.readString(output));
@@ -195,8 +201,11 @@ class AppUsageOutputTest {
         });
 
         String expected = """
-                graph variable_usage {
-                  "value";
+                digraph member_usage {
+                  rankdir=LR;
+                  "variable:value" [label="value", shape=ellipse];
+                  "method:update()" [label="update()", shape=box];
+                  "method:update()" -> "variable:value" [label="uses"];
                 }
                 """;
         assertEquals(expected, Files.readString(output));
