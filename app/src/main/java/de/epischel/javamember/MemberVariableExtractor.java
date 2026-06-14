@@ -28,5 +28,19 @@ public class MemberVariableExtractor {
                 .map(VariableDeclarator::getNameAsString)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Returns explicitly declared static final fields.
+     *
+     * @param cu parsed compilation unit of a Java source file
+     * @return list of constant names in declaration order
+     */
+    public static List<String> getConstantNames(CompilationUnit cu) {
+        return cu.findAll(FieldDeclaration.class).stream()
+                .filter(field -> field.isStatic() && field.isFinal())
+                .flatMap(field -> field.getVariables().stream())
+                .map(VariableDeclarator::getNameAsString)
+                .collect(Collectors.toList());
+    }
 }
 

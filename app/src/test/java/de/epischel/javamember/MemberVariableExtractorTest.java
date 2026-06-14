@@ -27,5 +27,23 @@ class MemberVariableExtractorTest {
         List<String> vars = MemberVariableExtractor.getMemberVariableNames(cu);
         assertEquals(List.of("a", "b", "c", "PI"), vars);
     }
+
+    @Test
+    void extractsOnlyStaticFinalFieldsAsConstants() throws Exception {
+        String source = """
+                class Sample {
+                    static final int FIRST = 1, SECOND = 2;
+                    final int instanceValue = 3;
+                    static int mutableStatic = 4;
+                }
+                """;
+        Path temp = Files.createTempFile("Sample", ".java");
+        Files.writeString(temp, source);
+        CompilationUnit cu = App.parseFile(temp);
+
+        assertEquals(
+                List.of("FIRST", "SECOND"),
+                MemberVariableExtractor.getConstantNames(cu));
+    }
 }
 

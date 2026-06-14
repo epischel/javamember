@@ -143,5 +143,63 @@ class AppUsageOutputTest {
                 """;
         assertEquals(expected, Files.readString(output));
     }
+
+    @Test
+    void ignoresConstantsInTextOutputAndClusters() throws Exception {
+        Path source = Files.createTempFile("Sample", ".java");
+        Files.writeString(source, """
+                class Sample {
+                    private static final int LIMIT = 10;
+                    private final int initialValue = 1;
+                    private int value;
+                    void update() { value = LIMIT + initialValue; }
+                }
+                """);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        try {
+            System.setOut(new PrintStream(out));
+            App.main(new String[]{"--ignore-constants", source.toString()});
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        String expected = String.join(System.lineSeparator(),
+                "initialValue:",
+                "- update()",
+                "value:",
+                "- update()",
+                "",
+                "Cluster:",
+                "initialValue, value") + System.lineSeparator();
+        assertEquals(expected, out.toString());
+    }
+
+    @Test
+    void ignoresConstantsInDotOutput() throws Exception {
+        Path source = Files.createTempFile("Sample", ".java");
+        Files.writeString(source, """
+                class Sample {
+                    private static final int LIMIT = 10;
+                    private int value;
+                    void update() { value = LIMIT; }
+                }
+                """);
+        Path output = Files.createTempFile("variables", ".dot");
+
+        App.main(new String[]{
+                "--dot", output.toString(),
+                "--ignore-constants",
+                source.toString()
+        });
+
+        String expected = """
+                graph variable_usage {
+                  "value";
+                }
+                """;
+        assertEquals(expected, Files.readString(output));
+    }
 }
 

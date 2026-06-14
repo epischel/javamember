@@ -22,13 +22,17 @@ public class App {
         }
 
         CompilationUnit cu = parseFile(options.source());
+        Set<String> excludedVariables = new LinkedHashSet<>(options.excludedVariables());
+        if (options.ignoreConstants()) {
+            excludedVariables.addAll(MemberVariableExtractor.getConstantNames(cu));
+        }
         if (options.dotOutput() != null) {
-            VariableUsageDotWriter.write(cu, options.dotOutput(), options.excludedVariables());
+            VariableUsageDotWriter.write(cu, options.dotOutput(), excludedVariables);
             return;
         }
 
         List<String> variables = MemberVariableExtractor.getMemberVariableNames(cu).stream()
-                .filter(variable -> !options.excludedVariables().contains(variable))
+                .filter(variable -> !excludedVariables.contains(variable))
                 .toList();
         for (String variable : variables) {
             System.out.println(variable + ":");
@@ -38,7 +42,7 @@ public class App {
         }
         System.out.println("");
         System.out.println("Cluster:");
-        VariableClusterFinder.findClusters(cu, options.excludedVariables()).stream()
+        VariableClusterFinder.findClusters(cu, excludedVariables).stream()
                 .filter(cluster -> cluster.size() > 1)
                 .forEach(cluster -> System.out.println(String.join(", ", cluster)));
     }
@@ -46,6 +50,7 @@ public class App {
     private static CliOptions parseArguments(String[] args) {
         Path source = null;
         Path dotOutput = null;
+        boolean ignoreConstants = false;
         Set<String> excludedVariables = new LinkedHashSet<>();
 
         for (int i = 0; i < args.length; i++) {
@@ -67,6 +72,7 @@ public class App {
                         }
                     }
                 }
+                case "--ignore-constants" -> ignoreConstants = true;
                 default -> {
                     if (args[i].startsWith("--") || source != null) {
                         return null;
@@ -76,15 +82,22 @@ public class App {
             }
         }
 
-        return source == null ? null : new CliOptions(source, dotOutput, Set.copyOf(excludedVariables));
+        return source == null
+                ? null
+                : new CliOptions(source, dotOutput, Set.copyOf(excludedVariables), ignoreConstants);
     }
 
     private static void printUsage() {
         System.err.println("Usage:");
-        System.err.println("  javamember [--exclude <name1,name2>] <Java source file>");
-        System.err.println("  javamember --dot <output.dot> [--exclude <name1,name2>] <Java source file>");
+        System.err.println("  javamember [--exclude <name1,name2>] [--ignore-constants] <Java source file>");
+        System.err.println("  javamember --dot <output.dot> [--exclude <name1,name2>]"
+                + " [--ignore-constants] <Java source file>");
     }
 
-    private record CliOptions(Path source, Path dotOutput, Set<String> excludedVariables) {
+    private record CliOptions(
+            Path source,
+            Path dotOutput,
+            Set<String> excludedVariables,
+            boolean ignoreConstants) {
     }
 }
