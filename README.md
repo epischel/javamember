@@ -4,7 +4,7 @@ check where a java member is used in a class
 Text output:
 
 ```text
-javamember [--exclude <name1,name2>] [--ignore-constants] <Java source file>
+javamember [--exclude <name1,name2>] [--ignore-constants] [--overlapping-clusters] <Java source file>
 ```
 
 Graphviz DOT output:
@@ -21,3 +21,7 @@ Variable names passed to `--exclude` are comma-separated. Whitespace around name
 and empty entries are ignored.
 
 `--ignore-constants` excludes fields declared as `static final`.
+
+`--overlapping-clusters` reports maximal groups of pairwise connected variables.
+Unlike the default connected-component clustering, a variable may occur in more
+than one cluster.

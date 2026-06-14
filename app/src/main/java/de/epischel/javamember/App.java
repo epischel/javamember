@@ -42,7 +42,10 @@ public class App {
         }
         System.out.println("");
         System.out.println("Cluster:");
-        VariableClusterFinder.findClusters(cu, excludedVariables).stream()
+        List<Set<String>> clusters = options.overlappingClusters()
+                ? VariableClusterFinder.findOverlappingClusters(cu, excludedVariables)
+                : VariableClusterFinder.findClusters(cu, excludedVariables);
+        clusters.stream()
                 .filter(cluster -> cluster.size() > 1)
                 .forEach(cluster -> System.out.println(String.join(", ", cluster)));
     }
@@ -51,6 +54,7 @@ public class App {
         Path source = null;
         Path dotOutput = null;
         boolean ignoreConstants = false;
+        boolean overlappingClusters = false;
         Set<String> excludedVariables = new LinkedHashSet<>();
 
         for (int i = 0; i < args.length; i++) {
@@ -73,6 +77,7 @@ public class App {
                     }
                 }
                 case "--ignore-constants" -> ignoreConstants = true;
+                case "--overlapping-clusters" -> overlappingClusters = true;
                 default -> {
                     if (args[i].startsWith("--") || source != null) {
                         return null;
@@ -84,12 +89,18 @@ public class App {
 
         return source == null
                 ? null
-                : new CliOptions(source, dotOutput, Set.copyOf(excludedVariables), ignoreConstants);
+                : new CliOptions(
+                        source,
+                        dotOutput,
+                        Set.copyOf(excludedVariables),
+                        ignoreConstants,
+                        overlappingClusters);
     }
 
     private static void printUsage() {
         System.err.println("Usage:");
-        System.err.println("  javamember [--exclude <name1,name2>] [--ignore-constants] <Java source file>");
+        System.err.println("  javamember [--exclude <name1,name2>] [--ignore-constants]"
+                + " [--overlapping-clusters] <Java source file>");
         System.err.println("  javamember --dot <output.dot> [--exclude <name1,name2>]"
                 + " [--ignore-constants] <Java source file>");
     }
@@ -98,6 +109,7 @@ public class App {
             Path source,
             Path dotOutput,
             Set<String> excludedVariables,
-            boolean ignoreConstants) {
+            boolean ignoreConstants,
+            boolean overlappingClusters) {
     }
 }

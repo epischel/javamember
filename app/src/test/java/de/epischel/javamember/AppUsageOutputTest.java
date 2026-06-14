@@ -210,5 +210,42 @@ class AppUsageOutputTest {
                 """;
         assertEquals(expected, Files.readString(output));
     }
+
+    @Test
+    void printsOverlappingClustersWhenRequested() throws Exception {
+        Path source = Files.createTempFile("Sample", ".java");
+        Files.writeString(source, """
+                class Sample {
+                    private int a;
+                    private int b;
+                    private int c;
+                    void useAB() { a++; b++; }
+                    void useBC() { b++; c++; }
+                }
+                """);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        try {
+            System.setOut(new PrintStream(out));
+            App.main(new String[]{"--overlapping-clusters", source.toString()});
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        String expected = String.join(System.lineSeparator(),
+                "a:",
+                "- useAB()",
+                "b:",
+                "- useAB()",
+                "- useBC()",
+                "c:",
+                "- useBC()",
+                "",
+                "Cluster:",
+                "a, b",
+                "b, c") + System.lineSeparator();
+        assertEquals(expected, out.toString());
+    }
 }
 
